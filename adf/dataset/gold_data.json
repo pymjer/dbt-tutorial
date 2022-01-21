@@ -1,0 +1,19 @@
+{
+	"name": "gold_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "traininglakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "external",
+				"fileSystem": "gold"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,42 @@
+{
+	"name": "electroniz_master_trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "electroniz_master_pipeline",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"STORAGE_ACCOUNT": "traininglakehouseiwm",
+					"BRONZE_LAYER_NAMESPACE": "bronze",
+					"STORE_SALES_FOLDER": "sales",
+					"TABLE_LIST": "products,store_customers,store_orders",
+					"CURRENCY_LIST": "CAD,INR,EUR",
+					"CURRENCY_FOLDER": "currency",
+					"GEOLOCATION_FOLDER": "geolocation",
+					"LOGS_FOLDER": "logs",
+					"ECOMM_FOLDER": "esalesns/esaleshub/*/*/*/*/*/*/*",
+					"EXT_TAB_FILE_FORMAT": "parquetformat",
+					"EXT_DATA_SOURCE": "trainingds",
+					"EXT_CREDENTIALS": "trainingcreds",
+					"EXT_TAB_LOCATION": "https://traininglakehouseiwm.blob.core.windows.net",
+					"SILVER_LAYER_NAMESPACE": "silver",
+					"GOLD_LAYER_NAMESPACE": "gold"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 1,
+				"startTime": "2022-01-17T03:28:00Z",
+				"endTime": "2022-01-17T06:28:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
