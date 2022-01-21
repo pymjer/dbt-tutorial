@@ -1,0 +1,183 @@
+{
+	"name": "electroniz_master_pipeline",
+	"properties": {
+		"description": "This pipeline runs the ingestion, curation, and aggregation pipeline.",
+		"activities": [
+			{
+				"name": "Run electroniz_batch_ingestion_pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "electroniz_batch_ingestion_pipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Run electroniz_curation_pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Run electroniz_batch_ingestion_pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "electroniz_curation_pipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"STORAGE_ACCOUNT": {
+							"value": "@pipeline().parameters.STORAGE_ACCOUNT",
+							"type": "Expression"
+						},
+						"BRONZE_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.BRONZE_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"SILVER_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"STORE_SALES_FOLDER": {
+							"value": "@pipeline().parameters.STORE_SALES_FOLDER",
+							"type": "Expression"
+						},
+						"ADLS_FOLDER": {
+							"value": "@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+							"type": "Expression"
+						},
+						"TABLE_LIST": {
+							"value": "@pipeline().parameters.TABLE_LIST",
+							"type": "Expression"
+						},
+						"CURRENCY_LIST": {
+							"value": "@pipeline().parameters.CURRENCY_LIST",
+							"type": "Expression"
+						},
+						"CURRENCY_FOLDER": {
+							"value": "@pipeline().parameters.CURRENCY_FOLDER",
+							"type": "Expression"
+						},
+						"GEOLOCATION_FOLDER": {
+							"value": "@pipeline().parameters.GEOLOCATION_FOLDER",
+							"type": "Expression"
+						},
+						"LOGS_FOLDER": {
+							"value": "@pipeline().parameters.LOGS_FOLDER",
+							"type": "Expression"
+						},
+						"ECOMM_FOLDER": {
+							"value": "@pipeline().parameters.ECOMM_FOLDER",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Run electroniz_aggregation_pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Run electroniz_curation_pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "electroniz_aggregation_pipeline_nosecret",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EXT_TAB_FILE_FORMAT": {
+							"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+							"type": "Expression"
+						},
+						"EXT_DATA_SOURCE": {
+							"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+							"type": "Expression"
+						},
+						"EXT_CREDENTIALS": {
+							"value": "@pipeline().parameters.EXT_CREDENTIALS",
+							"type": "Expression"
+						},
+						"SILVER_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"GOLD_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"EXT_TAB_LOCATION": {
+							"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"STORAGE_ACCOUNT": {
+				"type": "string"
+			},
+			"BRONZE_LAYER_NAMESPACE": {
+				"type": "string"
+			},
+			"STORE_SALES_FOLDER": {
+				"type": "string"
+			},
+			"TABLE_LIST": {
+				"type": "string"
+			},
+			"CURRENCY_LIST": {
+				"type": "string"
+			},
+			"CURRENCY_FOLDER": {
+				"type": "string"
+			},
+			"GEOLOCATION_FOLDER": {
+				"type": "string"
+			},
+			"LOGS_FOLDER": {
+				"type": "string"
+			},
+			"ECOMM_FOLDER": {
+				"type": "string"
+			},
+			"EXT_TAB_FILE_FORMAT": {
+				"type": "string"
+			},
+			"EXT_DATA_SOURCE": {
+				"type": "string"
+			},
+			"EXT_CREDENTIALS": {
+				"type": "string"
+			},
+			"EXT_TAB_LOCATION": {
+				"type": "string"
+			},
+			"SILVER_LAYER_NAMESPACE": {
+				"type": "string"
+			},
+			"GOLD_LAYER_NAMESPACE": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-01-14T08:45:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

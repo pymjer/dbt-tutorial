@@ -1,0 +1,113 @@
+{
+	"name": "electroniz_curation_pipeline",
+	"properties": {
+		"description": "This pipeline will curate data for the sales database, currency conversion, geo-location, and e-commerce website tracking logs by fetching from the bronze layer and saving it in the silver layer.",
+		"activities": [
+			{
+				"name": "Run Curation Notebook",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/jzbgfeng@gmail.com/electroniz_curation_notebook",
+					"baseParameters": {
+						"STORAGE_ACCOUNT": {
+							"value": "@pipeline().parameters.STORAGE_ACCOUNT",
+							"type": "Expression"
+						},
+						"BRONZE_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.BRONZE_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"SILVER_LAYER_NAMESPACE": {
+							"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+							"type": "Expression"
+						},
+						"STORE_SALES_FOLDER": {
+							"value": "@pipeline().parameters.STORE_SALES_FOLDER",
+							"type": "Expression"
+						},
+						"ADLS_FOLDER": {
+							"value": "@pipeline().parameters.ADLS_FOLDER",
+							"type": "Expression"
+						},
+						"TABLE_LIST": {
+							"value": "@pipeline().parameters.TABLE_LIST",
+							"type": "Expression"
+						},
+						"CURRENCY_LIST": {
+							"value": "@pipeline().parameters.CURRENCY_LIST",
+							"type": "Expression"
+						},
+						"CURRENCY_FOLDER": {
+							"value": "@pipeline().parameters.CURRENCY_FOLDER",
+							"type": "Expression"
+						},
+						"GEOLOCATION_FOLDER": {
+							"value": "@pipeline().parameters.GEOLOCATION_FOLDER",
+							"type": "Expression"
+						},
+						"LOGS_FOLDER": {
+							"value": "@pipeline().parameters.LOGS_FOLDER",
+							"type": "Expression"
+						},
+						"ECOMM_FOLDER": {
+							"value": "@pipeline().parameters.ECOMM_FOLDER",
+							"type": "Expression"
+						},
+						"ADLS_KEY": "novalue"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Curation Spark Cluster",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"STORAGE_ACCOUNT": {
+				"type": "string"
+			},
+			"BRONZE_LAYER_NAMESPACE": {
+				"type": "string"
+			},
+			"SILVER_LAYER_NAMESPACE": {
+				"type": "string"
+			},
+			"STORE_SALES_FOLDER": {
+				"type": "string"
+			},
+			"ADLS_FOLDER": {
+				"type": "string"
+			},
+			"TABLE_LIST": {
+				"type": "string"
+			},
+			"CURRENCY_LIST": {
+				"type": "string"
+			},
+			"CURRENCY_FOLDER": {
+				"type": "string"
+			},
+			"GEOLOCATION_FOLDER": {
+				"type": "string"
+			},
+			"LOGS_FOLDER": {
+				"type": "string"
+			},
+			"ECOMM_FOLDER": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-01-14T02:50:37Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

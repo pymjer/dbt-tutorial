@@ -7,7 +7,12 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
+<<<<<<< HEAD
 profile: 'dap'
+=======
+profile: 'datalake'
+query-comment: null
+>>>>>>> 182c6fbe8f5b21828fc1531b00bbba60aed24cfc
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
@@ -22,6 +27,7 @@ snapshot-paths: ["snapshots"]
 target-path: "target"  # directory which will store compiled SQL files
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
+<<<<<<< HEAD
   - "dbt_modules"
 
 
@@ -38,3 +44,6 @@ models:
     staging:
       +materialized: view
 
+=======
+  - "dbt_modules"
+>>>>>>> 182c6fbe8f5b21828fc1531b00bbba60aed24cfc
