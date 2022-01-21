@@ -1,0 +1,84 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "traininglakehousedfiwm"
+		},
+		"Curation Spark Cluster_accessToken": {
+			"value": ""
+		},
+		"Synapse Serverless_connectionString": {
+			"value": ""
+		},
+		"salesdbsource_connectionString": {
+			"value": ""
+		},
+		"traininglakehouse_accountKey": {
+			"value": ""
+		},
+		"websitetrackinglogs_connectionString": {
+			"value": ""
+		},
+		"httpsource_properties_typeProperties_url": {
+			"value": "https://raw.githubusercontent.com/PacktPublishing/Data-Engineering-with-Apache-Spark-Delta-Lake-and-Lakehouse/main/project/prep/iplocation/IP2LOCATION-LITE-DB1.CSV"
+		},
+		"restsource_properties_typeProperties_url": {
+			"value": "https://prepaid.currconv.com/api/v7/convert?"
+		},
+		"traininglakehouse_properties_typeProperties_url": {
+			"value": "https://traininglakehouseiwm.dfs.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
+			"value": "traininglakehouseiwm"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE": {
+			"value": "bronze"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER": {
+			"value": "sales"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST": {
+			"value": "products,store_customers,store_orders"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST": {
+			"value": "CAD,INR,EUR"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER": {
+			"value": "currency"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER": {
+			"value": "geolocation"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER": {
+			"value": "logs"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER": {
+			"value": "esalesns/esaleshub/*/*/*/*/*/*/*"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT": {
+			"value": "parquetformat"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE": {
+			"value": "trainingds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS": {
+			"value": "trainingcreds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION": {
+			"value": "https://traininglakehouseiwm.blob.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE": {
+			"value": "silver"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
+			"value": "gold"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

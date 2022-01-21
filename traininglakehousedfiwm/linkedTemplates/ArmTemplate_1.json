@@ -1,0 +1,313 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "数据工厂名称",
+			"defaultValue": "traininglakehousedfiwm"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
+			"type": "string",
+			"defaultValue": "traininglakehouseiwm"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "bronze"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER": {
+			"type": "string",
+			"defaultValue": "sales"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST": {
+			"type": "string",
+			"defaultValue": "products,store_customers,store_orders"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST": {
+			"type": "string",
+			"defaultValue": "CAD,INR,EUR"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER": {
+			"type": "string",
+			"defaultValue": "currency"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER": {
+			"type": "string",
+			"defaultValue": "geolocation"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER": {
+			"type": "string",
+			"defaultValue": "logs"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER": {
+			"type": "string",
+			"defaultValue": "esalesns/esaleshub/*/*/*/*/*/*/*"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT": {
+			"type": "string",
+			"defaultValue": "parquetformat"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE": {
+			"type": "string",
+			"defaultValue": "trainingds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS": {
+			"type": "string",
+			"defaultValue": "trainingcreds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION": {
+			"type": "string",
+			"defaultValue": "https://traininglakehouseiwm.blob.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "silver"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "gold"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_master_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline runs the ingestion, curation, and aggregation pipeline.",
+				"activities": [
+					{
+						"name": "Run electroniz_batch_ingestion_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_batch_ingestion_pipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Run electroniz_curation_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Run electroniz_batch_ingestion_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_curation_pipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"STORAGE_ACCOUNT": {
+									"value": "@pipeline().parameters.STORAGE_ACCOUNT",
+									"type": "Expression"
+								},
+								"BRONZE_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.BRONZE_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"SILVER_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"STORE_SALES_FOLDER": {
+									"value": "@pipeline().parameters.STORE_SALES_FOLDER",
+									"type": "Expression"
+								},
+								"ADLS_FOLDER": {
+									"value": "@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+									"type": "Expression"
+								},
+								"TABLE_LIST": {
+									"value": "@pipeline().parameters.TABLE_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_LIST": {
+									"value": "@pipeline().parameters.CURRENCY_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_FOLDER": {
+									"value": "@pipeline().parameters.CURRENCY_FOLDER",
+									"type": "Expression"
+								},
+								"GEOLOCATION_FOLDER": {
+									"value": "@pipeline().parameters.GEOLOCATION_FOLDER",
+									"type": "Expression"
+								},
+								"LOGS_FOLDER": {
+									"value": "@pipeline().parameters.LOGS_FOLDER",
+									"type": "Expression"
+								},
+								"ECOMM_FOLDER": {
+									"value": "@pipeline().parameters.ECOMM_FOLDER",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Run electroniz_aggregation_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Run electroniz_curation_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_aggregation_pipeline_nosecret",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"EXT_TAB_FILE_FORMAT": {
+									"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+									"type": "Expression"
+								},
+								"EXT_DATA_SOURCE": {
+									"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+									"type": "Expression"
+								},
+								"EXT_CREDENTIALS": {
+									"value": "@pipeline().parameters.EXT_CREDENTIALS",
+									"type": "Expression"
+								},
+								"SILVER_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"GOLD_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"EXT_TAB_LOCATION": {
+									"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"STORAGE_ACCOUNT": {
+						"type": "string"
+					},
+					"BRONZE_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"STORE_SALES_FOLDER": {
+						"type": "string"
+					},
+					"TABLE_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_FOLDER": {
+						"type": "string"
+					},
+					"GEOLOCATION_FOLDER": {
+						"type": "string"
+					},
+					"LOGS_FOLDER": {
+						"type": "string"
+					},
+					"ECOMM_FOLDER": {
+						"type": "string"
+					},
+					"EXT_TAB_FILE_FORMAT": {
+						"type": "string"
+					},
+					"EXT_DATA_SOURCE": {
+						"type": "string"
+					},
+					"EXT_CREDENTIALS": {
+						"type": "string"
+					},
+					"EXT_TAB_LOCATION": {
+						"type": "string"
+					},
+					"SILVER_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"GOLD_LAYER_NAMESPACE": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-14T08:45:47Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_master_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "electroniz_master_pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"STORAGE_ACCOUNT": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT')]",
+							"BRONZE_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE')]",
+							"STORE_SALES_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER')]",
+							"TABLE_LIST": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST')]",
+							"CURRENCY_LIST": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST')]",
+							"CURRENCY_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER')]",
+							"GEOLOCATION_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER')]",
+							"LOGS_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER')]",
+							"ECOMM_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER')]",
+							"EXT_TAB_FILE_FORMAT": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT')]",
+							"EXT_DATA_SOURCE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE')]",
+							"EXT_CREDENTIALS": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS')]",
+							"EXT_TAB_LOCATION": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION')]",
+							"SILVER_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE')]",
+							"GOLD_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 1,
+						"startTime": "2022-01-17T03:28:00Z",
+						"endTime": "2022-01-17T06:28:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/electroniz_master_pipeline')]"
+			]
+		}
+	]
+}

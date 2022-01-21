@@ -1,0 +1,1874 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "数据工厂名称",
+			"defaultValue": "traininglakehousedfiwm"
+		},
+		"Curation Spark Cluster_accessToken": {
+			"type": "secureString",
+			"metadata": "“Curation Spark Cluster”的“accessToken”的安全字符串"
+		},
+		"Synapse Serverless_connectionString": {
+			"type": "secureString",
+			"metadata": "“Synapse Serverless”的“connectionString”的安全字符串"
+		},
+		"salesdbsource_connectionString": {
+			"type": "secureString",
+			"metadata": "“salesdbsource”的“connectionString”的安全字符串"
+		},
+		"traininglakehouse_accountKey": {
+			"type": "secureString",
+			"metadata": "“traininglakehouse”的“accountKey”的安全字符串"
+		},
+		"websitetrackinglogs_connectionString": {
+			"type": "secureString",
+			"metadata": "“websitetrackinglogs”的“connectionString”的安全字符串"
+		},
+		"httpsource_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://raw.githubusercontent.com/PacktPublishing/Data-Engineering-with-Apache-Spark-Delta-Lake-and-Lakehouse/main/project/prep/iplocation/IP2LOCATION-LITE-DB1.CSV"
+		},
+		"restsource_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://prepaid.currconv.com/api/v7/convert?"
+		},
+		"traininglakehouse_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://traininglakehouseiwm.dfs.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
+			"type": "string",
+			"defaultValue": "traininglakehouseiwm"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "bronze"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER": {
+			"type": "string",
+			"defaultValue": "sales"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST": {
+			"type": "string",
+			"defaultValue": "products,store_customers,store_orders"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST": {
+			"type": "string",
+			"defaultValue": "CAD,INR,EUR"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER": {
+			"type": "string",
+			"defaultValue": "currency"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER": {
+			"type": "string",
+			"defaultValue": "geolocation"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER": {
+			"type": "string",
+			"defaultValue": "logs"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER": {
+			"type": "string",
+			"defaultValue": "esalesns/esaleshub/*/*/*/*/*/*/*"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT": {
+			"type": "string",
+			"defaultValue": "parquetformat"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE": {
+			"type": "string",
+			"defaultValue": "trainingds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS": {
+			"type": "string",
+			"defaultValue": "trainingcreds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION": {
+			"type": "string",
+			"defaultValue": "https://traininglakehouseiwm.blob.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "silver"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "gold"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_aggregation_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline will aggregate data from the sales database, currency conversion, geo-location, and ecommerce website tracking.",
+				"activities": [
+					{
+						"name": "Get Secret",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://trainingkv100iwm.vault.azure.net/secrets/ADLSSASKEY/9f528c65ff94459297ed50218e181e7e?api-version=7.0",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "Drop Gold Layer Tables",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Get Secret",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[drop_gold_tables]",
+							"storedProcedureParameters": {
+								"goldns": {
+									"value": {
+										"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Create Synapse Credentials",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Drop Gold Layer Tables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_synapse_creds]",
+							"storedProcedureParameters": {
+								"format": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"extds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"creds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_CREDENTIALS",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"secret": {
+									"value": {
+										"value": "@activity('Get Secret').output.value",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"location": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Create Silver Layer Views",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Create Synapse Credentials",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_silver_views]",
+							"storedProcedureParameters": {
+								"silverns": {
+									"value": {
+										"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"location": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Cleanup Gold Data",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Create Silver Layer Views",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "gold_data",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Create Gold Layer Tables",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Cleanup Gold Data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_gold_tables]",
+							"storedProcedureParameters": {
+								"goldns": {
+									"value": {
+										"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"format": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"extds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"EXT_TAB_FILE_FORMAT": {
+						"type": "string"
+					},
+					"EXT_DATA_SOURCE": {
+						"type": "string"
+					},
+					"EXT_CREDENTIALS": {
+						"type": "string"
+					},
+					"SILVER_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"GOLD_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"EXT_TAB_LOCATION": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-14T07:10:39Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Synapse Serverless')]",
+				"[concat(variables('factoryId'), '/datasets/gold_data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_aggregation_pipeline_nosecret')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline will aggregate data from the sales database, currency conversion, geo-location, and ecommerce website tracking.",
+				"activities": [
+					{
+						"name": "Drop Gold Layer Tables",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[drop_gold_tables]",
+							"storedProcedureParameters": {
+								"goldns": {
+									"value": {
+										"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Create Synapse Credentials",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Drop Gold Layer Tables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_synapse_creds]",
+							"storedProcedureParameters": {
+								"format": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"extds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"creds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_CREDENTIALS",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"secret": {
+									"value": "?sv=2020-08-04&ss=bfqt&srt=sco&sp=rwdlacupx&se=2025-01-14T14:06:54Z&st=2022-01-14T06:06:54Z&spr=https,http&sig=JvjqZfcB40hT%2FJd1EqwZNIGHJdLhNni1IWreOqad2l4%3D",
+									"type": "String"
+								},
+								"location": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Create Silver Layer Views",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Create Synapse Credentials",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_silver_views]",
+							"storedProcedureParameters": {
+								"silverns": {
+									"value": {
+										"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"location": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Cleanup Gold Data",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Create Silver Layer Views",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "gold_data",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Create Gold Layer Tables",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Cleanup Gold Data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[create_gold_tables]",
+							"storedProcedureParameters": {
+								"goldns": {
+									"value": {
+										"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"format": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"extds": {
+									"value": {
+										"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Synapse Serverless",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"EXT_TAB_FILE_FORMAT": {
+						"type": "string"
+					},
+					"EXT_DATA_SOURCE": {
+						"type": "string"
+					},
+					"EXT_CREDENTIALS": {
+						"type": "string"
+					},
+					"SILVER_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"GOLD_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"EXT_TAB_LOCATION": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-14T07:12:44Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Synapse Serverless')]",
+				"[concat(variables('factoryId'), '/datasets/gold_data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_batch_ingestion_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline will ingest data from sales database, currency conversion, geo-location, and ecommerce website tracking",
+				"activities": [
+					{
+						"name": "Get Geo-location Mapping",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "GeoDelimitedTextSource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "GeoDelimitedTextSync",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Find SalesDB Tables",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get Geo-location Mapping",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT QUOTENAME(table_schema)+'.'+QUOTENAME(table_name) AS Table_Name FROM information_Schema.tables WHERE table_name not in ('watermarktable', 'database_firewall_rules','ipv6_database_firewall_rules')",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "salesdbds",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "For Each Table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Find SalesDB Tables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Find SalesDB Tables').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Lookup Old Watermark",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT * FROM [dbo].[watermarktable] AS WatermarkValue WHERE table_name='@{item().Table_Name}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "salesdbds",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Lookup New Watermark",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT MAX(updated_at) as NewWatermarkvalue FROM @{item().Table_Name}",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "salesdbds",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Copy Table Data",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Lookup Old Watermark",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										},
+										{
+											"activity": "Lookup New Watermark",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT * FROM @{item().Table_Name} WHERE updated_at > '@{activity('Lookup Old Watermark').output.firstRow.watermark_value}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "salesdbds",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SalesDelimitedText",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileExt": "csv",
+												"FileTime": "@pipeline().TriggerTime"
+											}
+										}
+									]
+								},
+								{
+									"name": "Update Watermark",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Copy Table Data",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[dbo].[usp_write_watermark]",
+										"storedProcedureParameters": {
+											"LastModifiedtime": {
+												"value": {
+													"value": "@{activity('Lookup New Watermark').output.firstRow.NewWatermarkvalue}",
+													"type": "Expression"
+												},
+												"type": "Datetime"
+											},
+											"TableName": {
+												"value": {
+													"value": "@{activity('Lookup Old Watermark').output.firstRow.table_name}",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "salesdbsource",
+										"type": "LinkedServiceReference"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Find Currencies",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "For Each Table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT DISTINCT currency FROM [dbo].[store_orders] WHERE currency <> 'USD'",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "salesdbds",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "For Each Currency",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Find Currencies",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Find Currencies').output.value",
+								"type": "Expression"
+							},
+							"batchCount": 1,
+							"activities": [
+								{
+									"name": "Get Currency Value",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "RestResource1",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "CurrencyDelimitedText",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Copy Website Tracking Data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "For Each Currency",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false,
+									"prefix": "electroniz_access"
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "TrackingJSON",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "TrackingJSONSync",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Delete Website Tracking Logs",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Copy Website Tracking Data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "TrackingJSON",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-12T09:28:06Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/GeoDelimitedTextSource')]",
+				"[concat(variables('factoryId'), '/datasets/GeoDelimitedTextSync')]",
+				"[concat(variables('factoryId'), '/datasets/salesdbds')]",
+				"[concat(variables('factoryId'), '/datasets/TrackingJSON')]",
+				"[concat(variables('factoryId'), '/datasets/TrackingJSONSync')]",
+				"[concat(variables('factoryId'), '/datasets/SalesDelimitedText')]",
+				"[concat(variables('factoryId'), '/linkedServices/salesdbsource')]",
+				"[concat(variables('factoryId'), '/datasets/RestResource1')]",
+				"[concat(variables('factoryId'), '/datasets/CurrencyDelimitedText')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_curation_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline will curate data for the sales database, currency conversion, geo-location, and e-commerce website tracking logs by fetching from the bronze layer and saving it in the silver layer.",
+				"activities": [
+					{
+						"name": "Run Curation Notebook",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/jzbgfeng@gmail.com/electroniz_curation_notebook",
+							"baseParameters": {
+								"STORAGE_ACCOUNT": {
+									"value": "@pipeline().parameters.STORAGE_ACCOUNT",
+									"type": "Expression"
+								},
+								"BRONZE_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.BRONZE_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"SILVER_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"STORE_SALES_FOLDER": {
+									"value": "@pipeline().parameters.STORE_SALES_FOLDER",
+									"type": "Expression"
+								},
+								"ADLS_FOLDER": {
+									"value": "@pipeline().parameters.ADLS_FOLDER",
+									"type": "Expression"
+								},
+								"TABLE_LIST": {
+									"value": "@pipeline().parameters.TABLE_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_LIST": {
+									"value": "@pipeline().parameters.CURRENCY_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_FOLDER": {
+									"value": "@pipeline().parameters.CURRENCY_FOLDER",
+									"type": "Expression"
+								},
+								"GEOLOCATION_FOLDER": {
+									"value": "@pipeline().parameters.GEOLOCATION_FOLDER",
+									"type": "Expression"
+								},
+								"LOGS_FOLDER": {
+									"value": "@pipeline().parameters.LOGS_FOLDER",
+									"type": "Expression"
+								},
+								"ECOMM_FOLDER": {
+									"value": "@pipeline().parameters.ECOMM_FOLDER",
+									"type": "Expression"
+								},
+								"ADLS_KEY": "novalue"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "Curation Spark Cluster",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"STORAGE_ACCOUNT": {
+						"type": "string"
+					},
+					"BRONZE_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"SILVER_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"STORE_SALES_FOLDER": {
+						"type": "string"
+					},
+					"ADLS_FOLDER": {
+						"type": "string"
+					},
+					"TABLE_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_FOLDER": {
+						"type": "string"
+					},
+					"GEOLOCATION_FOLDER": {
+						"type": "string"
+					},
+					"LOGS_FOLDER": {
+						"type": "string"
+					},
+					"ECOMM_FOLDER": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-14T02:50:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Curation Spark Cluster')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_master_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline runs the ingestion, curation, and aggregation pipeline.",
+				"activities": [
+					{
+						"name": "Run electroniz_batch_ingestion_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_batch_ingestion_pipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Run electroniz_curation_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Run electroniz_batch_ingestion_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_curation_pipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"STORAGE_ACCOUNT": {
+									"value": "@pipeline().parameters.STORAGE_ACCOUNT",
+									"type": "Expression"
+								},
+								"BRONZE_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.BRONZE_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"SILVER_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"STORE_SALES_FOLDER": {
+									"value": "@pipeline().parameters.STORE_SALES_FOLDER",
+									"type": "Expression"
+								},
+								"ADLS_FOLDER": {
+									"value": "@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+									"type": "Expression"
+								},
+								"TABLE_LIST": {
+									"value": "@pipeline().parameters.TABLE_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_LIST": {
+									"value": "@pipeline().parameters.CURRENCY_LIST",
+									"type": "Expression"
+								},
+								"CURRENCY_FOLDER": {
+									"value": "@pipeline().parameters.CURRENCY_FOLDER",
+									"type": "Expression"
+								},
+								"GEOLOCATION_FOLDER": {
+									"value": "@pipeline().parameters.GEOLOCATION_FOLDER",
+									"type": "Expression"
+								},
+								"LOGS_FOLDER": {
+									"value": "@pipeline().parameters.LOGS_FOLDER",
+									"type": "Expression"
+								},
+								"ECOMM_FOLDER": {
+									"value": "@pipeline().parameters.ECOMM_FOLDER",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Run electroniz_aggregation_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Run electroniz_curation_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "electroniz_aggregation_pipeline_nosecret",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"EXT_TAB_FILE_FORMAT": {
+									"value": "@pipeline().parameters.EXT_TAB_FILE_FORMAT",
+									"type": "Expression"
+								},
+								"EXT_DATA_SOURCE": {
+									"value": "@pipeline().parameters.EXT_DATA_SOURCE",
+									"type": "Expression"
+								},
+								"EXT_CREDENTIALS": {
+									"value": "@pipeline().parameters.EXT_CREDENTIALS",
+									"type": "Expression"
+								},
+								"SILVER_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.SILVER_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"GOLD_LAYER_NAMESPACE": {
+									"value": "@pipeline().parameters.GOLD_LAYER_NAMESPACE",
+									"type": "Expression"
+								},
+								"EXT_TAB_LOCATION": {
+									"value": "@pipeline().parameters.EXT_TAB_LOCATION",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"STORAGE_ACCOUNT": {
+						"type": "string"
+					},
+					"BRONZE_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"STORE_SALES_FOLDER": {
+						"type": "string"
+					},
+					"TABLE_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_LIST": {
+						"type": "string"
+					},
+					"CURRENCY_FOLDER": {
+						"type": "string"
+					},
+					"GEOLOCATION_FOLDER": {
+						"type": "string"
+					},
+					"LOGS_FOLDER": {
+						"type": "string"
+					},
+					"ECOMM_FOLDER": {
+						"type": "string"
+					},
+					"EXT_TAB_FILE_FORMAT": {
+						"type": "string"
+					},
+					"EXT_DATA_SOURCE": {
+						"type": "string"
+					},
+					"EXT_CREDENTIALS": {
+						"type": "string"
+					},
+					"EXT_TAB_LOCATION": {
+						"type": "string"
+					},
+					"SILVER_LAYER_NAMESPACE": {
+						"type": "string"
+					},
+					"GOLD_LAYER_NAMESPACE": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-01-14T08:45:47Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/electroniz_batch_ingestion_pipeline')]",
+				"[concat(variables('factoryId'), '/pipelines/electroniz_curation_pipeline')]",
+				"[concat(variables('factoryId'), '/pipelines/electroniz_aggregation_pipeline_nosecret')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CurrencyDelimitedText')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "traininglakehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "currency/@{item().Currency}/@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+							"type": "Expression"
+						},
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/traininglakehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GeoDelimitedTextSource')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "httpsource",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/httpsource')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GeoDelimitedTextSync')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "traininglakehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "geolocation/@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+							"type": "Expression"
+						},
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/traininglakehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestResource1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "restsource",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "convert?q=USD_@{item().Currency}&compact=ultra&apiKey=pr_000cd4ac1446438d9f7d5e9bba83a888",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/restsource')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SalesDelimitedText')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "traininglakehouse",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileExt": {
+						"type": "string",
+						"defaultValue": "csv"
+					},
+					"FileTime": {
+						"type": "string",
+						"defaultValue": "@pipeline().TriggerTime"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(dataset().FileTime,'.',dataset().FileExt)",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "sales/@{activity('Lookup Old Watermark').output.firstRow.table_name}/@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+							"type": "Expression"
+						},
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/traininglakehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TrackingJSON')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "websitetrackinglogs",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "ecommercelogsiwm"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/websitetrackinglogs')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TrackingJSONSync')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "traininglakehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "logs/@{formatDateTime(utcnow(),'yyyy')}/@{formatDateTime(utcnow(),'MM')}/@{formatDateTime(utcnow(),'dd')}/@{formatDateTime(utcnow(),'HH')}",
+							"type": "Expression"
+						},
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/traininglakehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "traininglakehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "external",
+						"fileSystem": "gold"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/traininglakehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/salesdbds')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "salesdbsource",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/salesdbsource')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Curation Spark Cluster')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-5737680776356720.0.azuredatabricks.net",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('Curation Spark Cluster_accessToken')]"
+					},
+					"existingClusterId": "0113-033556-cv5yas8s"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Synapse Serverless')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('Synapse Serverless_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/httpsource')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('httpsource_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/restsource')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('restsource_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": false,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/salesdbsource')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('salesdbsource_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/traininglakehouse')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('traininglakehouse_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('traininglakehouse_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/websitetrackinglogs')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('websitetrackinglogs_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/electroniz_master_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "electroniz_master_pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"STORAGE_ACCOUNT": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT')]",
+							"BRONZE_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE')]",
+							"STORE_SALES_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER')]",
+							"TABLE_LIST": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST')]",
+							"CURRENCY_LIST": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST')]",
+							"CURRENCY_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER')]",
+							"GEOLOCATION_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER')]",
+							"LOGS_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER')]",
+							"ECOMM_FOLDER": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER')]",
+							"EXT_TAB_FILE_FORMAT": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT')]",
+							"EXT_DATA_SOURCE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE')]",
+							"EXT_CREDENTIALS": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS')]",
+							"EXT_TAB_LOCATION": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION')]",
+							"SILVER_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE')]",
+							"GOLD_LAYER_NAMESPACE": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 1,
+						"startTime": "2022-01-17T03:28:00Z",
+						"endTime": "2022-01-17T06:28:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/electroniz_master_pipeline')]"
+			]
+		}
+	]
+}

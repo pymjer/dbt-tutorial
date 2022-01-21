@@ -1,0 +1,223 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "数据工厂名称",
+			"defaultValue": "traininglakehousedfiwm"
+		},
+		"Curation Spark Cluster_accessToken": {
+			"type": "secureString",
+			"metadata": "“Curation Spark Cluster”的“accessToken”的安全字符串"
+		},
+		"Synapse Serverless_connectionString": {
+			"type": "secureString",
+			"metadata": "“Synapse Serverless”的“connectionString”的安全字符串"
+		},
+		"salesdbsource_connectionString": {
+			"type": "secureString",
+			"metadata": "“salesdbsource”的“connectionString”的安全字符串"
+		},
+		"traininglakehouse_accountKey": {
+			"type": "secureString",
+			"metadata": "“traininglakehouse”的“accountKey”的安全字符串"
+		},
+		"websitetrackinglogs_connectionString": {
+			"type": "secureString",
+			"metadata": "“websitetrackinglogs”的“connectionString”的安全字符串"
+		},
+		"httpsource_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://raw.githubusercontent.com/PacktPublishing/Data-Engineering-with-Apache-Spark-Delta-Lake-and-Lakehouse/main/project/prep/iplocation/IP2LOCATION-LITE-DB1.CSV"
+		},
+		"restsource_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://prepaid.currconv.com/api/v7/convert?"
+		},
+		"traininglakehouse_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://traininglakehouseiwm.dfs.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
+			"type": "string",
+			"defaultValue": "traininglakehouseiwm"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "bronze"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER": {
+			"type": "string",
+			"defaultValue": "sales"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST": {
+			"type": "string",
+			"defaultValue": "products,store_customers,store_orders"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST": {
+			"type": "string",
+			"defaultValue": "CAD,INR,EUR"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER": {
+			"type": "string",
+			"defaultValue": "currency"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER": {
+			"type": "string",
+			"defaultValue": "geolocation"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER": {
+			"type": "string",
+			"defaultValue": "logs"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER": {
+			"type": "string",
+			"defaultValue": "esalesns/esaleshub/*/*/*/*/*/*/*"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT": {
+			"type": "string",
+			"defaultValue": "parquetformat"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE": {
+			"type": "string",
+			"defaultValue": "trainingds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS": {
+			"type": "string",
+			"defaultValue": "trainingcreds"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION": {
+			"type": "string",
+			"defaultValue": "https://traininglakehouseiwm.blob.core.windows.net"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "silver"
+		},
+		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
+			"type": "string",
+			"defaultValue": "gold"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "包含链接 ARM 模板的存储帐户的 URI"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "包含链接 ARM 模板的存储帐户的 SAS 令牌"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "traininglakehousedfiwm_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"Curation Spark Cluster_accessToken": {
+						"value": "[parameters('Curation Spark Cluster_accessToken')]"
+					},
+					"Synapse Serverless_connectionString": {
+						"value": "[parameters('Synapse Serverless_connectionString')]"
+					},
+					"salesdbsource_connectionString": {
+						"value": "[parameters('salesdbsource_connectionString')]"
+					},
+					"traininglakehouse_accountKey": {
+						"value": "[parameters('traininglakehouse_accountKey')]"
+					},
+					"websitetrackinglogs_connectionString": {
+						"value": "[parameters('websitetrackinglogs_connectionString')]"
+					},
+					"httpsource_properties_typeProperties_url": {
+						"value": "[parameters('httpsource_properties_typeProperties_url')]"
+					},
+					"restsource_properties_typeProperties_url": {
+						"value": "[parameters('restsource_properties_typeProperties_url')]"
+					},
+					"traininglakehouse_properties_typeProperties_url": {
+						"value": "[parameters('traininglakehouse_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "traininglakehousedfiwm_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_BRONZE_LAYER_NAMESPACE')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORE_SALES_FOLDER')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_TABLE_LIST')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_LIST')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_CURRENCY_FOLDER')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GEOLOCATION_FOLDER')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_LOGS_FOLDER')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_ECOMM_FOLDER')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_FILE_FORMAT')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_DATA_SOURCE')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_CREDENTIALS')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_EXT_TAB_LOCATION')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_SILVER_LAYER_NAMESPACE')]"
+					},
+					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
+						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'traininglakehousedfiwm_ArmTemplate_0')]"
+			]
+		}
+	]
+}
