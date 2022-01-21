@@ -1,0 +1,13 @@
+{
+	"name": "Movies Source",
+	"properties": {
+		"description": "movies csv",
+		"annotations": [],
+		"type": "HttpServer",
+		"typeProperties": {
+			"url": "https://raw.githubusercontent.com/pymjer/adfdataflowdocs/master/sampledata/movies.csv",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
