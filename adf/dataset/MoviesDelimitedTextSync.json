@@ -1,0 +1,37 @@
+{
+	"name": "MoviesDelimitedTextSync",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "traininglakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "@{formatDateTime(utcnow(),'yyyyMMdd')}",
+				"folderPath": "movie",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "inventory_date",
+				"type": "String"
+			},
+			{
+				"name": "product",
+				"type": "String"
+			},
+			{
+				"name": "inventory",
+				"type": "String"
+			}
+		]
+	}
+}
