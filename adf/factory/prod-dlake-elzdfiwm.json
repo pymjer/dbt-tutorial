@@ -1,0 +1,9 @@
+{
+	"name": "prod-dlake-elzdfiwm",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "7015889f-62ad-4aff-a1b4-cb237eecee48",
+		"tenantId": "2d0b25c5-bebe-4a35-82dd-fb4ac533d43d"
+	}
+}
