@@ -1,0 +1,17 @@
+{
+	"name": "salesdbds_customer",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "salesdbsource",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "store_customers"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
