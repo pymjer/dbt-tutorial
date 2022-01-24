@@ -1,0 +1,20 @@
+{
+	"name": "customer_powerquery",
+	"properties": {
+		"type": "WranglingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"name": "salesdbds_customer",
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~>  salesdbds_customer",
+					"dataset": {
+						"referenceName": "salesdbds_customer",
+						"type": "DatasetReference"
+					}
+				}
+			],
+			"script": "section Section1;\r\nshared salesdbds_customer = let\r\n  AdfDoc = Sql.Database(\"salesdb111.database.windows.net\", \"salesdb\", [CreateNavigationProperties = false]),\r\n  InputTable = AdfDoc{[Schema = \"dbo\", Item = \"store_customers\"]}[Data]\r\nin\r\n  InputTable;\r\nshared UserQuery = let\r\n  Source = salesdbds_customer,\r\n  已删除列 = Table.RemoveColumns(Source, {\"credit_card\"}),\r\n  分组的行 = Table.Group(已删除列, {\"country\"}, {{\"country_cnt\", each Table.RowCount(_), Int64.Type}})\r\nin\r\n  分组的行;\r\n",
+			"documentLocale": "en-us"
+		}
+	}
+}
