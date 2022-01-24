@@ -1,0 +1,24 @@
+{
+	"name": "mvdataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "MoviesDBDelimitedTextLH",
+						"type": "DatasetReference"
+					},
+					"name": "MoviesDB"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "FilterYears"
+				}
+			],
+			"script": "source(output(\n\t\tmovie as integer,\n\t\ttitle as string,\n\t\tgenres as string,\n\t\tyear as short,\n\t\tRating as short,\n\t\tRottenTomato as short\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tignoreNoFilesFound: false) ~> MoviesDB\nMoviesDB filter(toInteger(year) >= 1910 && toInteger(year) <= 2000 && rlike(genres, 'Comedy')) ~> FilterYears"
+		}
+	}
+}
