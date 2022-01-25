@@ -5,7 +5,7 @@
 			"name": "test"
 		},
 		"content": {
-			"query": "SELECT TOP (100) [customer_id]\n,[customer_name]\n,[address]\n,[city]\n,[postalcode]\n,[country]\n,[phone]\n,[email]\n,[updated_at]\n FROM [dbo].[ecomm_customers]",
+			"query": "SELECT TOP (100) [customer_id]\n,cc\n,[customer_name]\n,[address]\n,[city]\n,[postalcode]\n,[country]\n,[phone]\n,[email]\n,[updated_at]\n FROM [dbo].[ecomm_customers]",
 			"metadata": {
 				"language": "sql"
 			},
