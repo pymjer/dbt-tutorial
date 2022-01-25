@@ -1,6 +1,9 @@
 {
 	"name": "Query Geolocation",
 	"properties": {
+		"folder": {
+			"name": "test"
+		},
 		"content": {
 			"query": "SELECT TOP (100) [ip1]\n,[ip2]\n,[country_code]\n,[country_name]\n,[updated_at]\n FROM [dbo].[geolocation]",
 			"metadata": {
