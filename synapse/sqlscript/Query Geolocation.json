@@ -1,0 +1,17 @@
+{
+	"name": "Query Geolocation",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [ip1]\n,[ip2]\n,[country_code]\n,[country_name]\n,[updated_at]\n FROM [dbo].[geolocation]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "gold",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

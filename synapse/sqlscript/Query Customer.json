@@ -1,0 +1,17 @@
+{
+	"name": "Query Customer",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [customer_id]\n,[customer_name]\n,[address]\n,[city]\n,[postalcode]\n,[country]\n,[phone]\n,[email]\n,[updated_at]\n FROM [dbo].[ecomm_customers]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "gold",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
