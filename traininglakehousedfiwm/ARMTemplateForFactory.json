@@ -1896,11 +1896,10 @@
 							"value": "@dataset().fileName",
 							"type": "Expression"
 						},
-						"folderPath": {
+						"container": {
 							"value": "@dataset().folderPath",
 							"type": "Expression"
-						},
-						"container": "ecommercelogsiwm"
+						}
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
