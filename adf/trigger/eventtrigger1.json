@@ -8,6 +8,10 @@
 				"pipelineReference": {
 					"referenceName": "CopyFileTriggerPipeline",
 					"type": "PipelineReference"
+				},
+				"parameters": {
+					"sourceFolder": "@triggerBody().event.data.sourceFolder",
+					"sourceFile": "@triggerBody().event.data.sourceFile"
 				}
 			}
 		],
