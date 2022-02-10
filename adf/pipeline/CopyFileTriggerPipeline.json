@@ -1,6 +1,14 @@
 {
 	"name": "CopyFileTriggerPipeline",
 	"properties": {
+		"parameters": {
+			"sourceFolder": {
+				"type": "string"
+			},
+			"sourceFile": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }

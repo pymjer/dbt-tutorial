@@ -9,6 +9,10 @@
 				"pipelineReference": {
 					"referenceName": "CopyFileTriggerPipeline",
 					"type": "PipelineReference"
+				},
+				"parameters": {
+					"sourceFolder": "@triggerBody().folderPath",
+					"sourceFile": "@triggerBody().fileName"
 				}
 			}
 		],
