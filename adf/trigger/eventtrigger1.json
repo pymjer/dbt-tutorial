@@ -1,0 +1,18 @@
+{
+	"name": "eventtrigger1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [],
+		"type": "CustomEventsTrigger",
+		"typeProperties": {
+			"subjectEndsWith": "",
+			"subjectBeginsWith": "factories",
+			"scope": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.EventGrid/topics/esalesiwm",
+			"events": [
+				"copyCompleted",
+				"copySucceeded"
+			]
+		}
+	}
+}
