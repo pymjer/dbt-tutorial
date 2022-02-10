@@ -20,6 +20,12 @@
 		"websitetrackinglogs_connectionString": {
 			"value": ""
 		},
+		"Http MoviesDB_properties_typeProperties_url": {
+			"value": "https://raw.githubusercontent.com/pymjer/adfdataflowdocs/master/sampledata/moviesDB.csv"
+		},
+		"Movies Source_properties_typeProperties_url": {
+			"value": "https://raw.githubusercontent.com/pymjer/adfdataflowdocs/master/sampledata/movies.csv"
+		},
 		"httpsource_properties_typeProperties_url": {
 			"value": "https://raw.githubusercontent.com/PacktPublishing/Data-Engineering-with-Apache-Spark-Delta-Lake-and-Lakehouse/main/project/prep/iplocation/IP2LOCATION-LITE-DB1.CSV"
 		},
@@ -73,6 +79,24 @@
 		},
 		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_GOLD_LAYER_NAMESPACE": {
 			"value": "gold"
+		},
+		"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+			"value": "@triggerBody().event.data.sourceFolder"
+		},
+		"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+			"value": "@triggerBody().event.data.sourceFile"
+		},
+		"eventtrigger1_properties_typeProperties_scope": {
+			"value": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.EventGrid/topics/esalesiwm"
+		},
+		"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+			"value": "@triggerBody().folderPath"
+		},
+		"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+			"value": "@triggerBody().fileName"
+		},
+		"storage_event_trigger_properties_typeProperties_scope": {
+			"value": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/traininglakehouseiwm"
 		}
 	}
 }

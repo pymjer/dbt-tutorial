@@ -27,6 +27,14 @@
 			"type": "secureString",
 			"metadata": "“websitetrackinglogs”的“connectionString”的安全字符串"
 		},
+		"Http MoviesDB_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://raw.githubusercontent.com/pymjer/adfdataflowdocs/master/sampledata/moviesDB.csv"
+		},
+		"Movies Source_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://raw.githubusercontent.com/pymjer/adfdataflowdocs/master/sampledata/movies.csv"
+		},
 		"httpsource_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://raw.githubusercontent.com/PacktPublishing/Data-Engineering-with-Apache-Spark-Delta-Lake-and-Lakehouse/main/project/prep/iplocation/IP2LOCATION-LITE-DB1.CSV"
@@ -99,6 +107,30 @@
 			"type": "string",
 			"defaultValue": "gold"
 		},
+		"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+			"type": "string",
+			"defaultValue": "@triggerBody().event.data.sourceFolder"
+		},
+		"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+			"type": "string",
+			"defaultValue": "@triggerBody().event.data.sourceFile"
+		},
+		"eventtrigger1_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.EventGrid/topics/esalesiwm"
+		},
+		"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"storage_event_trigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/traininglakehouseiwm"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "包含链接 ARM 模板的存储帐户的 URI"
@@ -141,6 +173,12 @@
 					"websitetrackinglogs_connectionString": {
 						"value": "[parameters('websitetrackinglogs_connectionString')]"
 					},
+					"Http MoviesDB_properties_typeProperties_url": {
+						"value": "[parameters('Http MoviesDB_properties_typeProperties_url')]"
+					},
+					"Movies Source_properties_typeProperties_url": {
+						"value": "[parameters('Movies Source_properties_typeProperties_url')]"
+					},
 					"httpsource_properties_typeProperties_url": {
 						"value": "[parameters('httpsource_properties_typeProperties_url')]"
 					},
@@ -167,6 +205,24 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+						"value": "[parameters('eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFolder')]"
+					},
+					"eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+						"value": "[parameters('eventtrigger1_properties_CopyFileTriggerPipeline_parameters_sourceFile')]"
+					},
+					"eventtrigger1_properties_typeProperties_scope": {
+						"value": "[parameters('eventtrigger1_properties_typeProperties_scope')]"
+					},
+					"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFolder": {
+						"value": "[parameters('storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFolder')]"
+					},
+					"storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFile": {
+						"value": "[parameters('storage_event_trigger_properties_CopyFileTriggerPipeline_parameters_sourceFile')]"
+					},
+					"storage_event_trigger_properties_typeProperties_scope": {
+						"value": "[parameters('storage_event_trigger_properties_typeProperties_scope')]"
 					},
 					"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
 						"value": "[parameters('electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT')]"
