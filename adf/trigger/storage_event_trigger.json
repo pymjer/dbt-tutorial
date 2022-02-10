@@ -18,10 +18,10 @@
 		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
-			"blobPathBeginsWith": "/scratch/blobs/",
+			"blobPathBeginsWith": "/ecommercelogsiwm/blobs/",
 			"blobPathEndsWith": ".csv",
 			"ignoreEmptyBlobs": true,
-			"scope": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/traininglakehouseiwm",
+			"scope": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/ecommercetrackingiwm",
 			"events": [
 				"Microsoft.Storage.BlobCreated",
 				"Microsoft.Storage.BlobDeleted"
