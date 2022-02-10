@@ -29,7 +29,7 @@
 		},
 		"storage_event_trigger_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/traininglakehouseiwm"
+			"defaultValue": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/ecommercetrackingiwm"
 		},
 		"electroniz_master_trigger_properties_electroniz_master_pipeline_parameters_STORAGE_ACCOUNT": {
 			"type": "string",
@@ -1969,7 +1969,7 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"blobPathBeginsWith": "/scratch/blobs/",
+					"blobPathBeginsWith": "/ecommercelogsiwm/blobs/",
 					"blobPathEndsWith": ".csv",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('storage_event_trigger_properties_typeProperties_scope')]",

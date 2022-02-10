@@ -96,7 +96,7 @@
 			"value": "@triggerBody().fileName"
 		},
 		"storage_event_trigger_properties_typeProperties_scope": {
-			"value": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/traininglakehouseiwm"
+			"value": "/subscriptions/0a21caed-1eab-441f-b72c-d646963f9800/resourceGroups/training_rg/providers/Microsoft.Storage/storageAccounts/ecommercetrackingiwm"
 		},
 		"containerUri": {
 			"value": ""
